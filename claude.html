@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .carousel-container {
+      width: 600px;
+      height: 400px;
+      position: relative;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .carousel {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      height: 100%;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 100%;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .carousel-btn:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    #prevBtn {
+      left: 1rem;
+    }
+
+    #nextBtn {
+      right: 1rem;
+    }
+
+    .dots-container {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="carousel-container">
+    <div class="carousel">
+      <div class="slide">
+        <img src="https://placehold.co/600x400" alt="Slide 1">
+      </div>
+      <div class="slide">
+        <img src="https://placehold.co/600x400" alt="Slide 2">
+      </div>
+      <div class="slide">
+        <img src="https://placehold.co/600x400" alt="Slide 3">
+      </div>
+    </div>
+    
+    <button id="prevBtn" class="carousel-btn">←</button>
+    <button id="nextBtn" class="carousel-btn">→</button>
+    
+    <div class="dots-container"></div>
+  </div>
+
+  <script>
+    const carousel = document.querySelector('.carousel');
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dotsContainer = document.querySelector('.dots-container');
+
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+
+    // Create dots
+    slides.forEach((_, index) => {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (index === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goToSlide(index));
+      dotsContainer.appendChild(dot);
+    });
+
+    const dots = document.querySelectorAll('.dot');
+
+    function updateDots() {
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+      });
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+      updateDots();
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      goToSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      goToSlide(currentSlide);
+    }
+
+    // Event listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    // Auto-advance every 5 seconds
+    setInterval(nextSlide, 5000);
+
+    // Add keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'ArrowRight') nextSlide();
+    });
+
+    // Add touch gesture support
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    carousel.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - carousel.offsetLeft;
+      scrollLeft = carousel.scrollLeft;
+    });
+
+    carousel.addEventListener('mouseleave', () => {
+      isDown = false;
+    });
+
+    carousel.addEventListener('mouseup', () => {
+      isDown = false;
+    });
+
+    carousel.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - carousel.offsetLeft;
+      const walk = (x - startX) * 3;
+      carousel.scrollLeft = scrollLeft - walk;
+      checkSwipe();
+    });
+
+    function checkSwipe() {
+      if (carousel.scrollLeft === 0) {
+        prevSlide();
+      } else if (carousel.scrollLeft + carousel.offsetWidth === carousel.scrollWidth) {
+        nextSlide();
+      }
+    }
+  </script>
+</body>
+</html>
